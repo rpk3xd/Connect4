@@ -32,16 +32,19 @@ public class Connect4Game{
                 }else if(game.col[columnP] == -1){
                     System.out.println("Column is Full, Try Again");
                 }else{
-                    isWon = game.insert(columnP);
+                    isWon = game.insert(game.getGrid(), columnP, game.getCol(), game.turns);
                 }
             }else{
+                
                 System.out.println("Computer is Calculating Best Move");
                 TimeUnit.SECONDS.sleep(5);
-                int columnC = ThreadLocalRandom.current().nextInt(0, 7);
-                while(game.col[columnC] == -1){
+                int columnC = 0;
+                if(game.turns == 1 || game.turns == 0){
                     columnC = ThreadLocalRandom.current().nextInt(0, 7);
+                }else{
+                    columnC = game.generateMove(game.getGrid());
                 }
-                isWon = game.insert(columnC);
+                isWon = game.insert(game.getGrid(), columnC, game.getCol(), game.turns);
             }
             if(isWon) break;
             if(game.turns >= 49) break;
