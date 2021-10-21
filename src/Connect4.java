@@ -29,7 +29,7 @@ public class Connect4{
         return col;
     }
 
-    public boolean insert(int[][] board, int column, int [] cols, int t){
+    public boolean insert(int[][] board, int column, int [] cols){
         boolean won = false;
         if(turn){
             board[cols[column]][column] = 1;
@@ -39,7 +39,6 @@ public class Connect4{
             won = gameWon(2);
         }
         cols[column]--;
-        t++;
         return won;
     }
 
@@ -93,29 +92,71 @@ public class Connect4{
 
     public int scoreBoard(int [][] board){
         int score = 0;
-        for(int [] rows : board){
+        //Horizontal
+        
+        int maxCount = 0;
+        
+        for(int i = 0; i < 7; i++){
             int twosCount = 0;
-            int maxCount = 0;
-            for(int i = 0; i < 4; i++){
-                twosCount = howMany(Arrays.copyOfRange(rows, i, i+4));
+            for(int j = 0; j < 4; j++){
+                int [] a = {board[i][j], board[i][j+1], board[i][j+2], board[i][j+3]};
+                twosCount = howMany(a);
                 if(twosCount > maxCount) maxCount = twosCount;
             }
             if(maxCount == 4) score+=100;
             if(maxCount == 3) score+=75;
             if(maxCount == 2) score+=50;
         }
+        
+        //Vertical
+        for(int i = 0; i < 4; i++){
+            int twosCount = 0;
+            for(int j = 0; j < 7; j++){
+                int [] a = {board[i][j], board[i+1][j], board[i+2][j], board[i+3][j]};
+                twosCount = howMany(a);
+                if(twosCount > maxCount) maxCount = twosCount;
+            }
+            if(maxCount == 4) score+=100;
+            if(maxCount == 3) score+=75;
+            if(maxCount == 2) score+=50;
+        }
+        
+        //Diagnol Increasing Decreasing
+        for(int i = 3; i < 7; i++){
+            int twosCount = 0;
+            for(int j = 3; j < 7; j++){
+                int [] a = {board[i][j], board[i-1][j-1], board[i-2][j-2], board[i-3][j-3]};
+                twosCount = howMany(a);
+                if(twosCount > maxCount) maxCount = twosCount;
+            }
+            if(maxCount == 4) score+=100;
+            if(maxCount == 3) score+=75;
+            if(maxCount == 2) score+=50;
+        }
+        for(int i = 3; i < 7; i++){
+            int twosCount = 0;
+            for(int j = 0; j < 4; j++){
+                int [] a = {board[i][j], board[i-1][j+1], board[i-2][j+2], board[i-3][j+3]};
+                twosCount = howMany(a);
+                if(twosCount > maxCount) maxCount = twosCount;
+            }
+            if(maxCount == 4) score+=100;
+            if(maxCount == 3) score+=75;
+            if(maxCount == 2) score+=50;
+        }
+        
+        //
         return score;
     }
 
-    public int generateMove(int [][] board){
+    public int generateMove(int [][] board, int [] colmn){
         int column = 0;
         int maxScore = 0;
-        for(int colm : col){
+        for(int colm : colmn){
             if(colm != -1){
                 int [][] tempGrid = generateCopyOfGrid(board);
                 int [] tempColm = Arrays.copyOf(col, 7);
-                int tempTurns = turns;
-                insert(tempGrid, colm, tempColm, tempTurns);
+                insert(tempGrid, colm, tempColm);
                 int value = scoreBoard(tempGrid);
                 if(value > maxScore){
                     maxScore = value;
