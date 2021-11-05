@@ -50,7 +50,6 @@ public class Connect4Game{
                     game.turns++;
                 }
             }else{
-                
                 System.out.println("Computer is Calculating Best Move");
                 //TimeUnit.SECONDS.sleep();
                 int column = game.minimax(game.getGrid(),game.getCol(), d, true)[0];
@@ -61,10 +60,10 @@ public class Connect4Game{
                 game.turns++;
             }
             if(isWon) break;
-            if(game.turns >= 49) break;
+            if(game.turns > 49) break;
             game.turn = !game.turn;
         }
-        if(game.turns > 49 && !game.gameWon(game.getGrid(), 1) && !game.gameWon(game.getGrid(), 2)){
+        if(game.turns >= 49 && !game.gameWon(game.getGrid(), 1) && !game.gameWon(game.getGrid(), 2)){
             System.out.println("There was no winner, game board is full");
         }else if(game.turn == true){
             System.out.println("Computer Loses, Player has Won");
