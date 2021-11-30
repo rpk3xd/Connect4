@@ -91,9 +91,9 @@ public class Connect4{
         int computer = howMany(row, COMPUTERCHIP);
         int empty = howMany(row, 0);
         if(computer == 4){
-            score += 50;
+            score += 100;
         }else if(computer == 3 && empty == 1){
-            score += 5;
+            score += 10;
         }else if(computer == 2 && empty == 2){
             score += 2;
         }
@@ -109,7 +109,7 @@ public class Connect4{
         //Center column
         int [] center = {board[0][3], board[1][3], board[2][3], board[3][3], board[4][3], board[5][3]};
         int c = howMany(center, chip);
-        score += (c * 5);
+        score += (c * 6);
         //Horizontal
         //display(board);
         //System.out.println();

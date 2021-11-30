@@ -1,66 +1,152 @@
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.io.*;
+import com.fazecast.jSerialComm.*;
 
 public class Connect4Game{
-    public static void main(String[] args) throws InterruptedException{
+    public static void main(String[] args) throws InterruptedException, IOException{
         Connect4 game = new Connect4();
         System.out.println("------- Welcome to Connect4 -------");
-        Scanner sc = new Scanner(System.in);
         int d = 1;
+
+        // Initializes the map for human column moves
+        Map<Character, Integer> human = Map.of(
+            'h', 0,
+            'i', 1,
+            'j', 2,
+            'k', 3,
+            'l', 4,
+            'm', 5,
+            'n', 6
+        );
+
+        //Initializes the map for robot column moves
+        Map<Integer, Character> robot = Map.of(
+            0, 'p',
+            1, 'q',
+            2, 'r',
+            3, 's',
+            4, 't',
+            5, 'u',
+            6, 'v'
+        );
+
+        // Open SerialPort for serial communication with the MSP
+        SerialPort sp = SerialPort.getCommPort("COM");
+        sp.openPort();
+
+        //Obtains output stream from the SerialPort
+        OutputStream os = sp.getOutputStream();
+
+        //Creates the Scanner that will read in from the command line
+        Scanner sc = new Scanner(System.in);
+
+        //Creates the Scanner that takes in input from the Comm Port
+        Scanner sc2 = new Scanner(sp.getInputStream());
+
         while(true){
-            System.out.println("Please choose who goes first: Player(p) or Computer(c)");
+
+            /**
+             * Asks the user to determine who will go first: Human or Robot
+             * will continue to ask for the proper input until it receives either an h or r
+             */
+
+            System.out.println("Please choose who goes first: Human(h) or Robot(r)");
             String first = sc.nextLine();
-            if(first.equals("p")){
+            if(first.equals("h")){
+
+                //Write to the Comm port that the human will go first
+                os.write('G');
+
                 game.turn = true;
                 break;
-            }else if(first.equals("c")){
+
+            }else if(first.equals("r")){
+                
+                //Write to the Comm port that the robot will go first
+                os.write('@');
+                
                 game.turn = false;
                 break;
+
             }else{
+
+                // Will continue to try and receive proper input from the user
                 System.out.println("Invalid Input, Try Again");
             }
+
         }
         while(true){
+
+            /** 
+             * Asks the user to determine the level of difficulty, hard or easy
+             */
+
             System.out.println("Please choose your difficulty: Hard (h) or Easy (e)");
             String diff = sc.nextLine();
+            
             if(diff.equals("h")){
+
                 d = 7;
                 break;
+                
             }else if(diff.equals("e")){
                 d = 1;
                 break;
+
             }else{
+
                 System.out.println("Invalid Input, Try Again");
+
             }
+
         }
+        /**
+         * BEGIN THE GAME
+         */
         while(true){
+
             boolean isWon = false;
             game.display(game.getGrid());
             System.out.println("Here is the current game board");
+            
+            //If it is the Humans turn
+
             if(game.turn){
-                System.out.println("Enter which column would you like to place a piece (0-6 inclusive): ");
-                int columnP = sc.nextInt();
-                if(columnP < 0 || columnP > 6){
+                
+                //Take in string of column values
+                String columnP = sc2.next();
+                char ch = columnP.charAt(columnP.length()-1);
+                int c = human.get(ch);
+
+                if(c < 0 || c > 6){
                     System.out.println("Invalid Input, Try Again");
-                }else if(game.col[columnP] == -1){
+                }else if(game.col[c] == -1){
                     System.out.println("Column is Full, Try Again");
                 }else{
-                    isWon = game.insert(game.getGrid(), columnP, game.getCol(), 1);
+                    isWon = game.insert(game.getGrid(), c, game.getCol(), 1);
                     game.turns++;
                 }
-            }else{
+            }
+            //If it is the Robots turn
+            else
+            {
                 System.out.println("Computer is Calculating Best Move");
                 //TimeUnit.SECONDS.sleep();
                 int column = game.minimax(game.getGrid(),game.getCol(), d, true)[0];
                 if(column == -1){
                     break;
                 }
+                char columnToMSP = robot.get(column);
+                
+                os.write(columnToMSP);
+                
                 isWon = game.insert(game.getGrid(), column, game.getCol(), 2);
                 game.turns++;
             }
             if(isWon) break;
-            if(game.turns > 49) break;
+            if(game.turns >= 49) break;
             game.turn = !game.turn;
         }
         if(game.turns >= 49 && !game.gameWon(game.getGrid(), 1) && !game.gameWon(game.getGrid(), 2)){
@@ -70,7 +156,16 @@ public class Connect4Game{
         }else{
             System.out.println("Player Lost, Computer Won");
         }
-        game.display(game.getGrid());
+        try {
+            os.write('O');
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            System.out.println("The game is over but the Com port is not available!");
+        }
+        sp.closePort();
+        os.close();
+        System.out.println("O");
+        //game.display(game.getGrid());
         sc.close();
     }
 }
