@@ -33,9 +33,10 @@ public class Connect4Game{
         );
 
         // Open SerialPort for serial communication with the MSP
-        SerialPort sp = SerialPort.getCommPort("COM");
+        SerialPort sp = SerialPort.getCommPort("COM6");
         sp.openPort();
-
+        sp.setBaudRate(115200);
+        sp.setComPortTimeouts(4096, 10000000, 10000000);
         //Obtains output stream from the SerialPort
         OutputStream os = sp.getOutputStream();
 
@@ -57,7 +58,8 @@ public class Connect4Game{
             if(first.equals("h")){
 
                 //Write to the Comm port that the human will go first
-                os.write('G');
+                byte [] a = {'G'};
+                sp.writeBytes(a, 1);
 
                 game.turn = true;
                 break;
@@ -65,7 +67,8 @@ public class Connect4Game{
             }else if(first.equals("r")){
                 
                 //Write to the Comm port that the robot will go first
-                os.write('@');
+                byte [] a = {'@'};
+                sp.writeBytes(a, 1);
                 
                 game.turn = false;
                 break;
@@ -116,9 +119,12 @@ public class Connect4Game{
             if(game.turn){
                 
                 //Take in string of column values
-                String columnP = sc2.next();
-                char ch = columnP.charAt(columnP.length()-1);
+                byte [] humansTurn = new byte [22];
+                int index = 0;
+                System.out.println(sp.readBytes(humansTurn, 1));
+                char ch = (char)humansTurn[index];
                 int c = human.get(ch);
+                index++;
 
                 if(c < 0 || c > 6){
                     System.out.println("Invalid Input, Try Again");
@@ -139,14 +145,17 @@ public class Connect4Game{
                     break;
                 }
                 char columnToMSP = robot.get(column);
-                
-                os.write(columnToMSP);
+                byte [] b = {(byte)columnToMSP};
+                sp.writeBytes(b, 1);
                 
                 isWon = game.insert(game.getGrid(), column, game.getCol(), 2);
                 game.turns++;
             }
             if(isWon) break;
             if(game.turns >= 49) break;
+            byte [] c = {'H'};
+            sp.writeBytes(c, 1);
+            System.out.println("Sent");
             game.turn = !game.turn;
         }
         if(game.turns >= 49 && !game.gameWon(game.getGrid(), 1) && !game.gameWon(game.getGrid(), 2)){
@@ -156,16 +165,11 @@ public class Connect4Game{
         }else{
             System.out.println("Player Lost, Computer Won");
         }
-        try {
-            os.write('O');
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            System.out.println("The game is over but the Com port is not available!");
-        }
-        sp.closePort();
+        byte [] e = {'O'};
+        sp.writeBytes(e, 1);
         os.close();
-        System.out.println("O");
-        //game.display(game.getGrid());
+        sp.closePort();
+        game.display(game.getGrid());
         sc.close();
     }
 }
