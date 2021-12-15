@@ -147,7 +147,19 @@ public class Connect4Game{
                 char columnToMSP = robot.get(column);
                 byte [] b = {(byte)columnToMSP};
                 sp.writeBytes(b, 1);
-                
+                byte [] errorDetect = new byte[22];
+                sp.readBytes(errorDetect, 1, 0);
+                char ch = (char)errorDetect[0];
+                while(ch != 'W'){
+                    if(ch == 'x'){
+                        System.out.println("The chip was dispensed into the wrong column, please place it in column: " + column);
+                    }else{
+                        System.out.println("The chipped has been jammed, please assist it in entering column: " + column);
+                    }
+                    sp.readBytes(errorDetect, 1, 0);
+                    ch = (char)errorDetect[0];
+                }
+
                 isWon = game.insert(game.getGrid(), column, game.getCol(), 2);
                 game.turns++;
             }
