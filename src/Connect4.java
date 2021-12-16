@@ -1,3 +1,10 @@
+/**
+ * Source Used for Logic of scoring and defining a win: https://github.com/KeithGalli/Connect4-Python
+ * 
+ * Source Usef for Logic of Minimax Algorithm: https://en.wikipedia.org/wiki/Minimax
+ * 
+ */
+
 import java.util.*;
 
 public class Connect4{

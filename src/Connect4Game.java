@@ -1,6 +1,4 @@
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.io.*;
 import com.fazecast.jSerialComm.*;
 import java.net.URISyntaxException;
